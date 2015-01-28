@@ -24,3 +24,75 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+[
+  'httpd-devel',
+  'gcc',
+  'autoconf',
+  'libxml2-devel',
+  'openssl-devel',
+  'libcurl-devel',
+  'mysql-devel',
+  'libpng-devel',
+].each do |p|
+  package p do
+  end
+end
+
+# Start apache
+service 'httpd' do
+  supports :status => true, :restart => true, :reload => true
+  action [:enable, :start]
+end
+
+# Download & extract source
+remote_file '/usr/local/src/php-5.2.17.tar.gz' do
+  source 'http://museum.php.net/php5/php-5.2.17.tar.gz'
+  action :create_if_missing
+end
+execute 'php52-extract-source' do
+  cwd '/usr/local/src'
+  command 'tar zxf php-5.2.17.tar.gz'
+  only_if {
+    File.exists?('/usr/local/src/php-5.2.17.tar.gz') &&
+    !File.directory?('/usr/local/src/php-5.2.17')
+  }
+end
+
+# configure
+configure_options = [
+  '--with-libdir=lib64',
+  '--with-apxs2=/usr/sbin/apxs',
+  '--with-openssl',
+  '--with-curl',
+  '--enable-mbstring',
+  '--enable-zend-multibyte',
+  '--with-mysql',
+  '--with-mysqli',
+  '--with-pdo-mysql',
+  '--with-pear',
+  '--with-gd',
+]
+execute 'php52-configure' do
+  cwd '/usr/local/src/php-5.2.17'
+  command "./configure #{configure_options.join(' ')}"
+  only_if {
+    File.directory?('/usr/local/src/php-5.2.17') &&
+    !File.exists?('/usr/local/src/php-5.2.17/Makefile')
+  }
+end
+
+# make, make install
+execute 'php52-make-install' do
+  cwd '/usr/local/src/php-5.2.17'
+  command 'make && make install'
+  only_if {
+    File.exists?('/usr/local/src/php-5.2.17/Makefile') &&
+    !File.exists?('/usr/local/src/php-5.2.17/sapi/cli/php')
+  }
+end
+
+# Setup /etc/httpd/conf.d/php.conf
+template '/etc/httpd/conf.d/php.conf' do
+  source 'apache.php.conf.erb'
+  notifies :reload, 'service[httpd]'
+end
