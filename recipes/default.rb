@@ -24,6 +24,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# Disable SELinux
+selinux 'disabled' do
+end
+
 # Setup apache2
 include_recipe 'apache2'
 

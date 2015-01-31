@@ -7,4 +7,5 @@ long_description 'Installs/Configures php52'
 version          '0.1.0'
 supports         'centos', '6.5'
 
+depends 'selinux'
 depends 'apache2'
