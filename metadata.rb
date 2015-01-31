@@ -6,3 +6,5 @@ description      'Installs/Configures php52'
 long_description 'Installs/Configures php52'
 version          '0.1.0'
 supports         'centos', '6.5'
+
+depends 'apache2'

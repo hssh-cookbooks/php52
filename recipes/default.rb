@@ -24,10 +24,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# Setup apache2
+include_recipe 'apache2'
+
 [
-  'httpd-devel',
   'gcc',
   'autoconf',
+  'httpd-devel',
   'libxml2-devel',
   'openssl-devel',
   'libcurl-devel',
@@ -36,12 +39,6 @@
 ].each do |p|
   package p do
   end
-end
-
-# Start apache
-service 'httpd' do
-  supports :status => true, :restart => true, :reload => true
-  action [:enable, :start]
 end
 
 # Download & extract source
@@ -86,7 +83,10 @@ end
 # make, make install
 execute 'php52-make-install' do
   cwd '/usr/local/src/php-5.2.17'
-  command 'make && make install'
+  command <<-EOC
+    make && make install
+    mv /etc/httpd/conf/httpd.conf.bak /etc/httpd/conf/httpd.conf
+  EOC
   only_if {
     File.exists?('/usr/local/src/php-5.2.17/Makefile') &&
     !File.exists?('/usr/local/src/php-5.2.17/sapi/cli/php')
