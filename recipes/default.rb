@@ -60,6 +60,8 @@ end
 
 # configure
 configure_options = [
+  '--with-config-file-path=/etc',
+  '--with-config-file-scan-dir=/etc/php.d',
   '--with-libdir=lib64',
   '--with-apxs2=/usr/sbin/apxs',
   '--with-openssl',
@@ -91,8 +93,18 @@ execute 'php52-make-install' do
   }
 end
 
+# Setup /etc/php.ini
+template '/etc/php.ini' do
+  source 'php.ini.erb'
+  variables ini: node['php52']['ini']
+end
+
 # Setup /etc/httpd/conf.d/php.conf
 template '/etc/httpd/conf.d/php.conf' do
   source 'apache.php.conf.erb'
   notifies :reload, 'service[httpd]'
+end
+
+# Create php log directory
+directory '/var/log/php' do
 end
