@@ -111,4 +111,6 @@ end
 
 # Create php log directory
 directory '/var/log/php' do
+  owner 'apache'
+  group 'apache'
 end
